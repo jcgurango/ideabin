@@ -3,12 +3,16 @@ A bin for your ideas. Messenger/inbox-style notetaking with audio recording, ima
 
 ## Feature Roadmap
 - [x] Record audio
-- [ ] Take photos/videos
+- [x] Take photos/videos
 - [x] Text notes
-- [ ] Share images/video/text from other apps
-- [ ] Quick action to immediately take a note
+- [x] Hashtags
+- [ ] Note storage
+- [ ] Note revisions
+- [ ] Note listing
 - [ ] Text search capability
 - [ ] Date search capability
-- [ ] Revisions
-- [ ] Hashtags
+- [ ] Share images/video/text from other apps
+- [ ] Quick action to immediately take a note
+- [ ] Quick action -> Start Audio Recording
+- [ ] Quick action -> Snap photo/video
 - [ ] Server sync

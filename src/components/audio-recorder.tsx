@@ -130,14 +130,15 @@ async function normalizeAudioBlob(
 export default function AudioRecorder({
   recording = false,
   onRecorded = () => {},
+  onRecordFailed = () => {},
 }: {
   recording?: boolean;
   onRecorded?: (audioUrl: string, amplitudeData: number[]) => void;
+  onRecordFailed?: () => void;
 }) {
   // (Try to) keep the screen awake while recording.
   const {
     isSupported,
-    released,
     request: requestWakeLock,
     release: releaseWakeLock,
   } = useWakeLock({
@@ -184,7 +185,7 @@ export default function AudioRecorder({
 
   async function startRecording() {
     if (!navigator?.mediaDevices) {
-      alert("Media devices not available (SSR environment?)");
+      onRecordFailed();
       return;
     }
 
@@ -243,6 +244,7 @@ export default function AudioRecorder({
     } catch (error) {
       console.error(error);
       alert("Could not access microphone.");
+      onRecordFailed();
     }
   }
 

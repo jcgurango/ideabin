@@ -1,6 +1,9 @@
+type FileType = "audio" | "image" | "video" | "blob";
+
 interface Note {
   text: string;
   tags: string[];
   file?: string;
-  fileType?: 'audio' | 'image' | 'video' | 'text';
+  filename?: string;
+  fileType?: FileType;
 }

@@ -8,9 +8,16 @@ import {
   CardTitle,
 } from "../components/ui/card";
 import { Button } from "../components/ui/button";
-import { Camera, Disc, Paperclip, StopCircle, Trash2 } from "lucide-react";
+import {
+  Camera,
+  Disc,
+  File,
+  Paperclip,
+  StopCircle,
+  Trash2,
+} from "lucide-react";
 import AudioRecorder from "../components/audio-recorder";
-import { useState } from "react";
+import { ChangeEvent, useRef, useState } from "react";
 import AudioPlayer from "./audio-player";
 import {
   Dialog,
@@ -20,6 +27,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "./ui/dialog";
+import { PhotoProvider, PhotoView } from "react-photo-view";
 
 function getTags(text: string) {
   // Based on the Twitter Text parsing library.
@@ -37,6 +45,19 @@ function getTags(text: string) {
   return tags;
 }
 
+function formatDate(date: Date) {
+  const pad = (num: number) => String(num).padStart(2, "0");
+
+  const YYYY = date.getFullYear();
+  const MM = pad(date.getMonth() + 1); // Months are 0-based
+  const DD = pad(date.getDate());
+  const HH = pad(date.getHours());
+  const mm = pad(date.getMinutes());
+  const SS = pad(date.getSeconds());
+
+  return `${YYYY}${MM}${DD}-${HH}_${mm}_${SS}`;
+}
+
 export default function CreateNote() {
   const [audioAmplitudeData, setAudioAmplitudeData] = useState<number[]>([]);
   const [note, setNote] = useState<Note>({
@@ -45,6 +66,58 @@ export default function CreateNote() {
   });
   const [record, setRecord] = useState(false);
   const [showRecorder, setShowRecorder] = useState(false);
+  const cameraPickerRef = useRef<HTMLInputElement>(null);
+  const filePickerRef = useRef<HTMLInputElement>(null);
+
+  function requestCamera() {
+    if (cameraPickerRef.current) {
+      cameraPickerRef.current.files = null;
+      cameraPickerRef.current.click();
+    }
+  }
+
+  function requestFile() {
+    if (filePickerRef.current) {
+      filePickerRef.current.files = null;
+      filePickerRef.current.click();
+    }
+  }
+
+  function handleFileChanged(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+
+    if (file) {
+      const fileUrl = URL.createObjectURL(file);
+      const filename = file.name;
+      let fileType: FileType = "blob";
+
+      // Determine type.
+      if (file.type.startsWith("image/")) {
+        // Image
+        fileType = "image";
+      } else if (file.type.startsWith("video/")) {
+        // Video
+        fileType = "video";
+      } else if (file.type.startsWith("audio/")) {
+        // Audio
+        fileType = "audio";
+
+        // STUB: Read amplitude data.
+        if (file.size < 1024 * 1024 * 20) {
+        } else {
+          // Refuse to read process data for files > 20 MB.
+          setAudioAmplitudeData([]);
+        }
+      }
+
+      setNote((note) => ({
+        ...note,
+        file: fileUrl,
+        filename,
+        fileType,
+      }));
+    }
+  }
 
   return (
     <Card>
@@ -69,10 +142,20 @@ export default function CreateNote() {
         ) : null}
       </CardContent>
       <CardFooter className="flex flex-col items-stretch">
+        <div className="hidden">
+          <input
+            type="file"
+            accept="image/*, video/*"
+            capture="environment"
+            ref={cameraPickerRef}
+            onChange={handleFileChanged}
+          />
+          <input type="file" ref={filePickerRef} onChange={handleFileChanged} />
+        </div>
         <div className="flex justify-start">
           {note.file ? (
             <Dialog>
-              <DialogTrigger>
+              <DialogTrigger asChild>
                 <Button variant="destructive" className="mr-2">
                   <Trash2 />
                   <span className="hidden md:inline">Remove File</span>
@@ -98,9 +181,6 @@ export default function CreateNote() {
                   >
                     Delete
                   </Button>
-                  <Button variant="ghost" type="submit">
-                    Cancel
-                  </Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
@@ -119,11 +199,19 @@ export default function CreateNote() {
                   {record ? "Stop Recording" : "Record Audio"}
                 </span>
               </Button>
-              <Button variant="outline" className="mr-2">
+              <Button
+                variant="outline"
+                className="mr-2"
+                onClick={requestCamera}
+              >
                 <Camera />
                 <span className="hidden md:inline">Take a Photo/Video</span>
               </Button>
-              <Button variant="secondary" className="mr-2">
+              <Button
+                variant="secondary"
+                className="mr-2"
+                onClick={requestFile}
+              >
                 <Paperclip />
                 <span className="hidden md:inline">Attach File</span>
               </Button>
@@ -140,17 +228,50 @@ export default function CreateNote() {
               amplitudeData={audioAmplitudeData}
               audioUrl={note.file!}
             />
-          ) : showRecorder ? (
+          ) : null}
+          {note.fileType === "image" ? (
+            <PhotoProvider>
+              <PhotoView src={note.file}>
+                <img
+                  src={note.file}
+                  alt="Uploaded file"
+                  className="max-h-50 ml-auto mr-auto"
+                />
+              </PhotoView>
+            </PhotoProvider>
+          ) : null}
+          {note.fileType === "video" ? (
+            <video className="max-h-50 bg-black w-full" controls>
+              <source src={note.file} />
+            </video>
+          ) : null}
+          {note.fileType === "blob" ? (
+            <Button
+              variant="secondary"
+              onClick={() => {
+                window.open(note.file, "_blank");
+              }}
+            >
+              <File /> {note.filename}
+            </Button>
+          ) : null}
+          {showRecorder ? (
             <AudioRecorder
               recording={record}
               onRecorded={(url, amplitude) => {
                 setNote((note) => ({
                   ...note,
                   file: url,
+                  filename: formatDate(new Date()) + ".wav",
                   fileType: "audio",
                 }));
                 setAudioAmplitudeData(amplitude);
                 setShowRecorder(false);
+              }}
+              onRecordFailed={() => {
+                setRecord(false);
+                setShowRecorder(false);
+                alert("Media devices not available.");
               }}
             />
           ) : null}
