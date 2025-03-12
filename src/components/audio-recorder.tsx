@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import Histogram from "./histogram";
+import { useWakeLock } from "react-screen-wake-lock";
 
 /**
  * Encode an AudioBuffer as a 16-bit PCM WAV Blob.
@@ -133,8 +134,32 @@ export default function AudioRecorder({
   recording?: boolean;
   onRecorded?: (audioUrl: string, amplitudeData: number[]) => void;
 }) {
+  // (Try to) keep the screen awake while recording.
+  const {
+    isSupported,
+    released,
+    request: requestWakeLock,
+    release: releaseWakeLock,
+  } = useWakeLock({
+    onRequest: () => console.log("Screen Wake Lock: requested!"),
+    onError: (e) => console.log("An error happened 💥", e),
+    onRelease: () => console.log("Screen Wake Lock: released!"),
+  });
+
+  useEffect(() => {
+    if (recording && isSupported) {
+      requestWakeLock();
+
+      return () => {
+        releaseWakeLock();
+      };
+    }
+  }, [isSupported, recording]);
+
   // Playback/Recording
   const [amplitudeData, setAmplitudeData] = useState<number[]>([]);
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const [releaseReady, setReleaseReady] = useState(false);
 
   // ────────────── Refs ──────────────
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -197,11 +222,9 @@ export default function AudioRecorder({
         );
 
         const url = URL.createObjectURL(normalizedBlob);
-        setAmplitudeData((data) => {
-          const gainAdjusted = data.map((n) => n * gain);
-          onRecorded(url, gainAdjusted);
-          return gainAdjusted;
-        });
+        setAmplitudeData((data) => data.map((n) => n * gain));
+        setAudioUrl(url);
+        setReleaseReady(true);
       };
 
       mediaRecorderRef.current.start();
@@ -276,6 +299,13 @@ export default function AudioRecorder({
       recordingRafRef.current = null;
     }
   }
+
+  useEffect(() => {
+    if (audioUrl && releaseReady) {
+      onRecorded(audioUrl, amplitudeData);
+      setReleaseReady(false);
+    }
+  }, [releaseReady, audioUrl, amplitudeData]);
 
   // ────────────────────────────────────────────────────────────────────────────
   //  Render

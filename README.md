@@ -4,7 +4,7 @@ A bin for your ideas. Messenger/inbox-style notetaking with audio recording, ima
 ## Feature Roadmap
 - [x] Record audio
 - [ ] Take photos/videos
-- [ ] Text notes
+- [x] Text notes
 - [ ] Share images/video/text from other apps
 - [ ] Quick action to immediately take a note
 - [ ] Text search capability
@@ -12,4 +12,3 @@ A bin for your ideas. Messenger/inbox-style notetaking with audio recording, ima
 - [ ] Revisions
 - [ ] Hashtags
 - [ ] Server sync
-- [ ] Web app
