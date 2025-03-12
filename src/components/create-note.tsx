@@ -17,17 +17,12 @@ import {
   Trash2,
 } from "lucide-react";
 import AudioRecorder from "../components/audio-recorder";
-import { ChangeEvent, useRef, useState } from "react";
+import { ChangeEvent, useMemo, useRef, useState } from "react";
 import AudioPlayer from "./audio-player";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogTitle,
-  DialogTrigger,
-} from "./ui/dialog";
 import { PhotoProvider, PhotoView } from "react-photo-view";
+import { EMPTY_NOTE, FileType, Note } from "@/lib/types";
+import AsyncButton from "./ui/async-button";
+import { useDb } from "@/providers/database-provider";
 
 function getTags(text: string) {
   // Based on the Twitter Text parsing library.
@@ -59,15 +54,18 @@ function formatDate(date: Date) {
 }
 
 export default function CreateNote() {
+  const db = useDb();
   const [audioAmplitudeData, setAudioAmplitudeData] = useState<number[]>([]);
-  const [note, setNote] = useState<Note>({
-    text: "",
-    tags: [],
-  });
+  const [note, setNote] = useState<Note>(EMPTY_NOTE);
   const [record, setRecord] = useState(false);
   const [showRecorder, setShowRecorder] = useState(false);
   const cameraPickerRef = useRef<HTMLInputElement>(null);
   const filePickerRef = useRef<HTMLInputElement>(null);
+  const fileUrl = useMemo(() => {
+    if (note.file) {
+      return URL.createObjectURL(note.file);
+    }
+  }, [note.file]);
 
   function requestCamera() {
     if (cameraPickerRef.current) {
@@ -87,7 +85,6 @@ export default function CreateNote() {
     const file = e.target.files?.[0];
 
     if (file) {
-      const fileUrl = URL.createObjectURL(file);
       const filename = file.name;
       let fileType: FileType = "blob";
 
@@ -112,7 +109,7 @@ export default function CreateNote() {
 
       setNote((note) => ({
         ...note,
-        file: fileUrl,
+        file,
         filename,
         fileType,
       }));
@@ -134,6 +131,7 @@ export default function CreateNote() {
               tags: getTags(e.target.value),
             }));
           }}
+          value={note.text}
         />
         {note.tags.length ? (
           <div className="text-gray-600 mt-2 text-sm">
@@ -154,36 +152,20 @@ export default function CreateNote() {
         </div>
         <div className="flex justify-start">
           {note.file ? (
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button variant="destructive" className="mr-2">
-                  <Trash2 />
-                  <span className="hidden md:inline">Remove File</span>
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogTitle>Are you sure?</DialogTitle>
-                <DialogDescription>
-                  This will discard any file attached to the note. This action
-                  cannot be undone.
-                </DialogDescription>
-                <DialogFooter>
-                  <Button
-                    variant="destructive"
-                    type="submit"
-                    onClick={() =>
-                      setNote((note) => ({
-                        ...note,
-                        file: undefined,
-                        fileType: undefined,
-                      }))
-                    }
-                  >
-                    Delete
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
+            <Button
+              variant="destructive"
+              className="mr-2"
+              onClick={() =>
+                setNote((note) => ({
+                  ...note,
+                  file: undefined,
+                  fileType: undefined,
+                }))
+              }
+            >
+              <Trash2 />
+              <span className="hidden md:inline">Remove File</span>
+            </Button>
           ) : (
             <>
               <Button
@@ -217,45 +199,59 @@ export default function CreateNote() {
               </Button>
             </>
           )}
-          <Button className="ml-auto" variant="ghost">
-            Cancel
-          </Button>
+          <AsyncButton
+            className="ml-auto"
+            disabled={!note.text && !note.file}
+            onClick={async () => {
+              await db.createNote(note);
+              setNote(EMPTY_NOTE);
+            }}
+            onError={(e) => {
+              alert("Oof it didn't work.");
+              console.error(e);
+            }}
+          >
+            Save
+          </AsyncButton>
         </div>
-        {/* File preview (if available) */}
-        <div className="mt-2">
-          {note.fileType === "audio" && audioAmplitudeData ? (
-            <AudioPlayer
-              amplitudeData={audioAmplitudeData}
-              audioUrl={note.file!}
-            />
-          ) : null}
-          {note.fileType === "image" ? (
-            <PhotoProvider>
-              <PhotoView src={note.file}>
-                <img
-                  src={note.file}
-                  alt="Uploaded file"
-                  className="max-h-50 ml-auto mr-auto"
-                />
-              </PhotoView>
-            </PhotoProvider>
-          ) : null}
-          {note.fileType === "video" ? (
-            <video className="max-h-50 bg-black w-full" controls>
-              <source src={note.file} />
-            </video>
-          ) : null}
-          {note.fileType === "blob" ? (
-            <Button
-              variant="secondary"
-              onClick={() => {
-                window.open(note.file, "_blank");
-              }}
-            >
-              <File /> {note.filename}
-            </Button>
-          ) : null}
-          {showRecorder ? (
+        {fileUrl ? (
+          <div className="mt-2">
+            {note.fileType === "audio" && audioAmplitudeData ? (
+              <AudioPlayer
+                amplitudeData={audioAmplitudeData}
+                audioUrl={fileUrl}
+              />
+            ) : null}
+            {note.fileType === "image" ? (
+              <PhotoProvider>
+                <PhotoView src={fileUrl}>
+                  <img
+                    src={fileUrl}
+                    alt="Uploaded file"
+                    className="max-h-50 ml-auto mr-auto"
+                  />
+                </PhotoView>
+              </PhotoProvider>
+            ) : null}
+            {note.fileType === "video" ? (
+              <video className="max-h-50 bg-black w-full" controls>
+                <source src={fileUrl} />
+              </video>
+            ) : null}
+            {note.fileType === "blob" ? (
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  window.open(fileUrl, "_blank");
+                }}
+              >
+                <File /> {note.filename}
+              </Button>
+            ) : null}
+          </div>
+        ) : null}
+        {showRecorder ? (
+          <div className="mt-2">
             <AudioRecorder
               recording={record}
               onRecorded={(url, amplitude) => {
@@ -274,8 +270,8 @@ export default function CreateNote() {
                 alert("Media devices not available.");
               }}
             />
-          ) : null}
-        </div>
+          </div>
+        ) : null}
       </CardFooter>
     </Card>
   );

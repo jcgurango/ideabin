@@ -6,11 +6,12 @@ A bin for your ideas. Messenger/inbox-style notetaking with audio recording, ima
 - [x] Take photos/videos
 - [x] Text notes
 - [x] Hashtags
-- [ ] Note storage
-- [ ] Note revisions
+- [x] Note storage
 - [ ] Note listing
+- [ ] Note revisions
 - [ ] Text search capability
 - [ ] Date search capability
+- [ ] PWM
 - [ ] Share images/video/text from other apps
 - [ ] Quick action to immediately take a note
 - [ ] Quick action -> Start Audio Recording

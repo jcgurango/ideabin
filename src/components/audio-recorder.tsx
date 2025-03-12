@@ -133,7 +133,7 @@ export default function AudioRecorder({
   onRecordFailed = () => {},
 }: {
   recording?: boolean;
-  onRecorded?: (audioUrl: string, amplitudeData: number[]) => void;
+  onRecorded?: (audioUrl: Blob, amplitudeData: number[]) => void;
   onRecordFailed?: () => void;
 }) {
   // (Try to) keep the screen awake while recording.
@@ -159,7 +159,7 @@ export default function AudioRecorder({
 
   // Playback/Recording
   const [amplitudeData, setAmplitudeData] = useState<number[]>([]);
-  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const [audioUrl, setAudioUrl] = useState<Blob | null>(null);
   const [releaseReady, setReleaseReady] = useState(false);
 
   // ────────────── Refs ──────────────
@@ -222,9 +222,8 @@ export default function AudioRecorder({
           rawBlob
         );
 
-        const url = URL.createObjectURL(normalizedBlob);
         setAmplitudeData((data) => data.map((n) => n * gain));
-        setAudioUrl(url);
+        setAudioUrl(normalizedBlob);
         setReleaseReady(true);
       };
 
