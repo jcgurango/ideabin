@@ -13,7 +13,8 @@ function Textarea({
   React.useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto"; // Reset height
-      textareaRef.current.style.height = textareaRef.current.scrollHeight + "px"; // Set to scroll height
+      textareaRef.current.style.height =
+        textareaRef.current.scrollHeight + "px"; // Set to scroll height
     }
   }, [value]);
 
@@ -26,6 +27,7 @@ function Textarea({
       )}
       style={{ overflow: "hidden", resize: "none", ...style }}
       ref={textareaRef}
+      value={value}
       {...props}
     />
   );

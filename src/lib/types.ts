@@ -5,6 +5,7 @@ export const EMPTY_NOTE: Note = {
 };
 
 export type FileType = "audio" | "image" | "video" | "blob";
+export type SortOrder = "asc" | "desc";
 
 export interface Note {
   id?: number;
@@ -14,7 +15,13 @@ export interface Note {
   filename?: string;
   fileType?: FileType;
   version: number;
-  parentNote?: number;
+  parentId?: number;
   createdAt?: Date;
   updatedAt?: Date;
+}
+
+export interface NoteQuery {
+  startDate?: Date;
+  endDate?: Date;
+  sortOrder: SortOrder;
 }

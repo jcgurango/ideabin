@@ -17,10 +17,10 @@ function formatTime(sec: number): string {
 }
 
 export default function AudioPlayer({
-  amplitudeData,
+  amplitudeData = [],
   audioUrl,
 }: {
-  amplitudeData: number[];
+  amplitudeData?: number[];
   audioUrl: string;
 }) {
   const [isPlaying, setIsPlaying] = useState(false);

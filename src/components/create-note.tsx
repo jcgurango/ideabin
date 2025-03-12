@@ -18,11 +18,10 @@ import {
 } from "lucide-react";
 import AudioRecorder from "../components/audio-recorder";
 import { ChangeEvent, useMemo, useRef, useState } from "react";
-import AudioPlayer from "./audio-player";
-import { PhotoProvider, PhotoView } from "react-photo-view";
 import { EMPTY_NOTE, FileType, Note } from "@/lib/types";
 import AsyncButton from "./ui/async-button";
 import { useDb } from "@/providers/database-provider";
+import FilePreview from "./file-preview";
 
 function getTags(text: string) {
   // Based on the Twitter Text parsing library.
@@ -55,7 +54,7 @@ function formatDate(date: Date) {
 
 export default function CreateNote() {
   const db = useDb();
-  const [audioAmplitudeData, setAudioAmplitudeData] = useState<number[]>([]);
+  const [audioAmplitudeData, setAudioAmplitudeData] = useState<number[]>();
   const [note, setNote] = useState<Note>(EMPTY_NOTE);
   const [record, setRecord] = useState(false);
   const [showRecorder, setShowRecorder] = useState(false);
@@ -98,13 +97,6 @@ export default function CreateNote() {
       } else if (file.type.startsWith("audio/")) {
         // Audio
         fileType = "audio";
-
-        // STUB: Read amplitude data.
-        if (file.size < 1024 * 1024 * 20) {
-        } else {
-          // Refuse to read process data for files > 20 MB.
-          setAudioAmplitudeData([]);
-        }
       }
 
       setNote((note) => ({
@@ -216,38 +208,12 @@ export default function CreateNote() {
         </div>
         {fileUrl ? (
           <div className="mt-2">
-            {note.fileType === "audio" && audioAmplitudeData ? (
-              <AudioPlayer
-                amplitudeData={audioAmplitudeData}
-                audioUrl={fileUrl}
-              />
-            ) : null}
-            {note.fileType === "image" ? (
-              <PhotoProvider>
-                <PhotoView src={fileUrl}>
-                  <img
-                    src={fileUrl}
-                    alt="Uploaded file"
-                    className="max-h-50 ml-auto mr-auto"
-                  />
-                </PhotoView>
-              </PhotoProvider>
-            ) : null}
-            {note.fileType === "video" ? (
-              <video className="max-h-50 bg-black w-full" controls>
-                <source src={fileUrl} />
-              </video>
-            ) : null}
-            {note.fileType === "blob" ? (
-              <Button
-                variant="secondary"
-                onClick={() => {
-                  window.open(fileUrl, "_blank");
-                }}
-              >
-                <File /> {note.filename}
-              </Button>
-            ) : null}
+            <FilePreview
+              file={note.file!}
+              filename={note.filename!}
+              fileType={note.fileType!}
+              audioAmplitudeData={audioAmplitudeData}
+            />
           </div>
         ) : null}
         {showRecorder ? (

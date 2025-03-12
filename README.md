@@ -7,7 +7,7 @@ A bin for your ideas. Messenger/inbox-style notetaking with audio recording, ima
 - [x] Text notes
 - [x] Hashtags
 - [x] Note storage
-- [ ] Note listing
+- [x] Note listing
 - [ ] Note revisions
 - [ ] Text search capability
 - [ ] Date search capability
