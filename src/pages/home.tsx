@@ -18,7 +18,7 @@ export default function Home() {
 
   return (
     <div>
-      <div className="sticky x-0 top-0 m-2">
+      <div className="sticky x-0 top-0 m-2 z-1">
         <CreateNote />
       </div>
       <NoteList key={resetter} />
