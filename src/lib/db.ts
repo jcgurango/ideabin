@@ -5,6 +5,7 @@ export type CreateNoteSubscriber = (newNote: Note) => void;
 
 export interface IdeaBinDatabase {
   createNote(note: Note): Promise<Note>;
+  deleteNote(noteId: number): Promise<void>;
   queryNotes(
     query?: NoteQuery,
     offset?: number,
@@ -56,6 +57,9 @@ export default async function getDb(): Promise<IdeaBinDatabase> {
       createSubscribers.forEach((subscriber) => subscriber(hydratedNote));
 
       return hydratedNote;
+    },
+    async deleteNote(id) {
+      await db.delete("notes", id);
     },
     async queryNotes(query, offset = 0, limit = 10) {
       const tx = db.transaction("notes");

@@ -14,14 +14,18 @@ export default function Home() {
     });
   }, [db]);
 
-  console.log(resetter);
-
   return (
     <div>
       <div className="sticky x-0 top-0 m-2 z-1">
         <CreateNote />
       </div>
-      <NoteList key={resetter} />
+      <NoteList
+        key={resetter}
+        onDelete={async (note) => {
+          await db.deleteNote(note.id!);
+          setResetter(Math.random());
+        }}
+      />
     </div>
   );
 }

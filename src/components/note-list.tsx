@@ -5,7 +5,13 @@ import { Loader2 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import SingleNote from "./single-note";
 
-export default function NoteList({ query }: { query?: NoteQuery }) {
+export default function NoteList({
+  query,
+  onDelete,
+}: {
+  query?: NoteQuery;
+  onDelete?: (note: Note) => void;
+}) {
   const db = useDb();
   const [notes, setNotes] = useState<Note[]>([]);
   const [scrollAtEnd, setScrollAtEnd] = useState(false);
@@ -56,8 +62,15 @@ export default function NoteList({ query }: { query?: NoteQuery }) {
     <div className="grid gap-y-2">
       {notes.map((note, i) => {
         return (
-          <div ref={i === notes.length - 1 ? lastNoteRef : null} key={note.id} className="p-2">
-            <SingleNote note={note} />
+          <div
+            ref={i === notes.length - 1 ? lastNoteRef : null}
+            key={note.id}
+            className="p-2"
+          >
+            <SingleNote
+              note={note}
+              onDelete={onDelete ? () => onDelete(note) : undefined}
+            />
           </div>
         );
       })}
