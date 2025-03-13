@@ -61,28 +61,28 @@ export default async function getDb(): Promise<IdeaBinDatabase> {
       const tx = db.transaction("notes");
       const store = tx.objectStore("notes");
       const index = store.index("createdAt");
-      const cursor = await index.openCursor(
+      let cursor = await index.openCursor(
         null,
         query?.sortOrder === "asc" ? undefined : "prev"
       );
 
       if (cursor) {
         if (offset > 0) {
-          await cursor.advance(offset);
+          cursor = await cursor.advance(offset);
         }
 
         const notes: Note[] = [];
         let taken = 0;
 
         while (taken < limit) {
-          if (!cursor.value) {
+          if (!cursor?.value) {
             break;
           }
 
           notes.push(transform(cursor.value));
           taken++;
 
-          await cursor.continue();
+          cursor = await cursor.continue();
         }
 
         return notes;
