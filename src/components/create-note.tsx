@@ -12,12 +12,13 @@ import {
   Camera,
   Disc,
   File,
+  FileX,
   Paperclip,
   StopCircle,
   Trash2,
 } from "lucide-react";
 import AudioRecorder from "../components/audio-recorder";
-import { ChangeEvent, useMemo, useRef, useState } from "react";
+import { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
 import { EMPTY_NOTE, FileType, Note } from "@/lib/types";
 import AsyncButton from "./ui/async-button";
 import { useDb } from "@/providers/database-provider";
@@ -52,7 +53,7 @@ function formatDate(date: Date) {
   return `${YYYY}${MM}${DD}-${HH}_${mm}_${SS}`;
 }
 
-export default function CreateNote() {
+export default function CreateNote({ initialNote }: { initialNote?: Note }) {
   const db = useDb();
   const [audioAmplitudeData, setAudioAmplitudeData] = useState<number[]>();
   const [note, setNote] = useState<Note>(EMPTY_NOTE);
@@ -65,6 +66,12 @@ export default function CreateNote() {
       return URL.createObjectURL(note.file);
     }
   }, [note.file]);
+
+  useEffect(() => {
+    if (initialNote) {
+      setNote(initialNote);
+    }
+  }, [initialNote]);
 
   function requestCamera() {
     if (cameraPickerRef.current) {
@@ -111,7 +118,18 @@ export default function CreateNote() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Create New Note</CardTitle>
+        <CardTitle className="flex justify-between items-center">
+          <span>{note.parentId ? "Create Revision" : "Create New Note"}</span>
+          {note.parentId ? (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setNote(EMPTY_NOTE)}
+            >
+              <FileX />
+            </Button>
+          ) : null}
+        </CardTitle>
       </CardHeader>
       <CardContent>
         <Textarea

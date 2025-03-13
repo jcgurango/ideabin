@@ -1,10 +1,12 @@
-import { openDB } from "idb";
+import { IDBPObjectStore, openDB } from "idb";
 import { Note, NoteQuery } from "./types";
 
 export type CreateNoteSubscriber = (newNote: Note) => void;
 
 export interface IdeaBinDatabase {
   createNote(note: Note): Promise<Note>;
+  getNote(noteId: number): Promise<Note | null>;
+  updateNote(note: Partial<Note>): Promise<void>;
   deleteNote(noteId: number): Promise<void>;
   queryNotes(
     query?: NoteQuery,
@@ -39,6 +41,49 @@ export default async function getDb(): Promise<IdeaBinDatabase> {
     },
   });
 
+  async function updateNote(note: Partial<Note>) {
+    if (note.id) {
+      const retrievedNote = await db.get("notes", note.id);
+
+      if (retrievedNote) {
+        await db.put("notes", {
+          ...retrievedNote,
+          ...note,
+        });
+      }
+    }
+  }
+
+  async function getCursorForQuery(
+    store: IDBPObjectStore<
+      {
+        notes: Note;
+      },
+      ["notes"],
+      "notes",
+      "readonly"
+    >,
+    query?: NoteQuery
+  ) {
+    if (query) {
+      if ("parentId" in query) {
+        const index = store.index("parentId");
+
+        return index.openCursor(
+          query.parentId,
+          query?.sortOrder === "asc" ? undefined : "prev"
+        );
+      }
+    }
+
+    const index = store.index("createdAt");
+
+    return index.openCursor(
+      null,
+      query?.sortOrder === "asc" ? undefined : "prev"
+    );
+  }
+
   return {
     async createNote({ id, ...note }) {
       const now = new Date().toISOString();
@@ -54,21 +99,34 @@ export default async function getDb(): Promise<IdeaBinDatabase> {
         ...newNote,
       });
 
+      if (note.parentId) {
+        await updateNote({
+          id: note.parentId,
+          hasRevisions: true,
+        });
+      }
+
       createSubscribers.forEach((subscriber) => subscriber(hydratedNote));
 
       return hydratedNote;
     },
+    async getNote(id) {
+      const rawNote = await db.get("notes", id);
+
+      if (rawNote) {
+        return transform(rawNote);
+      }
+
+      return null;
+    },
+    updateNote,
     async deleteNote(id) {
       await db.delete("notes", id);
     },
     async queryNotes(query, offset = 0, limit = 10) {
       const tx = db.transaction("notes");
       const store = tx.objectStore("notes");
-      const index = store.index("createdAt");
-      let cursor = await index.openCursor(
-        null,
-        query?.sortOrder === "asc" ? undefined : "prev"
-      );
+      let cursor = await getCursorForQuery(store, query);
 
       if (cursor) {
         if (offset > 0) {

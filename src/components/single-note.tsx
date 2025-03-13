@@ -24,9 +24,13 @@ import {
 export default function SingleNote({
   note,
   onDelete,
+  onEdit,
+  onViewRevisions,
 }: {
   note: Note;
   onDelete?: () => void;
+  onEdit?: () => void;
+  onViewRevisions?: () => void;
 }) {
   return (
     <Card>
@@ -50,11 +54,11 @@ export default function SingleNote({
         </CardContent>
       ) : null}
       <CardFooter className="text-sm justify-between items-center">
-        <div className="grid grid-cols-2 gap-2">
+        <div className="flex">
           {onDelete ? (
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="destructive" size="sm">
+                <Button variant="destructive" size="sm" className="mr-2">
                   <Trash />
                   <span className="hidden md:inline">Delete</span>
                 </Button>
@@ -75,10 +79,27 @@ export default function SingleNote({
               </AlertDialogContent>
             </AlertDialog>
           ) : null}
-          <Button variant="secondary" size="sm">
-            <Edit />
-            <span className="hidden md:inline">Edit</span>
-          </Button>
+          {onEdit ? (
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={onEdit}
+              className="mr-2"
+            >
+              <Edit />
+              <span className="hidden md:inline">Edit</span>
+            </Button>
+          ) : null}
+          {note.version > 1 || note.hasRevisions ? (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onViewRevisions ? () => onViewRevisions() : undefined}
+              disabled={!onViewRevisions}
+            >
+              v{note.version}
+            </Button>
+          ) : null}
         </div>
         <div>
           {note.createdAt?.toLocaleDateString()}

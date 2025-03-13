@@ -9,7 +9,7 @@ A bin for your ideas. Messenger/inbox-style notetaking with audio recording, ima
 - [x] Note storage
 - [x] Note listing
 - [x] PWA
-- [>] Note revisions
+- [x] Note revisions
 - [ ] Text search capability
 - [ ] Date search capability
 - [ ] Share images/video/text from other apps

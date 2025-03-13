@@ -18,10 +18,24 @@ export interface Note {
   parentId?: number;
   createdAt?: Date;
   updatedAt?: Date;
+  hasRevisions?: boolean;
 }
 
-export interface NoteQuery {
-  startDate?: Date;
-  endDate?: Date;
-  sortOrder: SortOrder;
-}
+export type NoteQuery = {
+  sortOrder?: SortOrder;
+} & (
+  | {
+      startDate?: Date;
+      endDate: Date;
+    }
+  | {
+      startDate: Date;
+      endDate?: Date;
+    }
+  | {
+      parentId: number;
+    }
+  | {
+      tag: string;
+    }
+);

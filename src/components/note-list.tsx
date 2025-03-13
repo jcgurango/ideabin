@@ -8,9 +8,13 @@ import SingleNote from "./single-note";
 export default function NoteList({
   query,
   onDelete,
+  onEdit,
+  onViewRevisions,
 }: {
   query?: NoteQuery;
   onDelete?: (note: Note) => void;
+  onEdit?: (note: Note) => void;
+  onViewRevisions?: (parentId: number) => void;
 }) {
   const db = useDb();
   const [notes, setNotes] = useState<Note[]>([]);
@@ -70,6 +74,8 @@ export default function NoteList({
             <SingleNote
               note={note}
               onDelete={onDelete ? () => onDelete(note) : undefined}
+              onEdit={onEdit ? () => onEdit(note) : undefined}
+              onViewRevisions={onViewRevisions ? () => onViewRevisions(note.version === 1 ? note.id! : note.parentId!) : undefined}
             />
           </div>
         );

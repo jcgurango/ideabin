@@ -38,6 +38,8 @@ export default function FilePreview({
     }
   }, [file, fileType]);
 
+  console.log(fileUrl);
+
   return (
     <>
       {fileType === "audio" && fileUrl ? (
@@ -54,7 +56,7 @@ export default function FilePreview({
           </PhotoView>
         </PhotoProvider>
       ) : null}
-      {fileType === "video" ? (
+      {fileType === "video" && fileUrl ? (
         <video className="max-h-50 bg-black w-full" controls>
           <source src={fileUrl} />
         </video>
