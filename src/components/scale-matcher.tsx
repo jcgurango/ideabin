@@ -102,7 +102,6 @@ export default function ScaleMatcher() {
       return [
         ...noteNames.map((name) => ({
           name: `${name} major`,
-          exact: true,
           sortOrder: 2,
         })),
         ...noteNames.map((name) => ({
@@ -113,28 +112,15 @@ export default function ScaleMatcher() {
       ];
     }
 
-    const matches: { exact: boolean; name: string; sortOrder: number }[] = [];
+    const matches: { name: string; sortOrder: number }[] = [];
 
     noteNames.forEach((noteName) => {
       matches.push(
-        ...Scale.detect(noteNames, { match: "exact", tonic: noteName }).map(
-          (name) => ({
-            exact: true,
+        ...Scale.detect(noteNames, { tonic: noteName })
+          .filter((name) => !matches.find(({ name: n }) => n === name))
+          .map((name) => ({
             name,
             sortOrder: getCommonness(name),
-          })
-        )
-      );
-    });
-
-    noteNames.forEach((noteName) => {
-      matches.push(
-        ...Scale.detect(noteNames, { match: "fit", tonic: noteName })
-          .filter((name) => !matches.find(({ name: n }) => name === n))
-          .map((name) => ({
-            exact: false,
-            name,
-            sortOrder: getCommonness(name) - 2,
           }))
       );
     });
@@ -175,11 +161,7 @@ export default function ScaleMatcher() {
 
           return (
             <Card key={match.name} className="mb-2 py-3 gap-2">
-              <CardHeader
-                className={`${match.exact ? "font-bold" : "font-medium"} px-3`}
-              >
-                {match.name}
-              </CardHeader>
+              <CardHeader className="font-bold px-3">{match.name}</CardHeader>
               <CardContent className="px-3">
                 <Table className="mb-2">
                   <TableCaption>Notes</TableCaption>
@@ -209,8 +191,7 @@ export default function ScaleMatcher() {
                   </TableHeader>
                   <TableBody>
                     <TableRow>{toChords([0, 2, 4], scale)}</TableRow>
-                    <TableRow>{toChords([0, 2, 4, 6], scale)}
-                    </TableRow>
+                    <TableRow>{toChords([0, 2, 4, 6], scale)}</TableRow>
                   </TableBody>
                 </Table>
               </CardContent>
