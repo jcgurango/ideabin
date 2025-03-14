@@ -36,7 +36,7 @@ export default function SingleNote({
     <Card>
       {note.text ? (
         <CardHeader>
-          <CardTitle className="whitespace-pre">{note.text}</CardTitle>
+          <CardTitle className="whitespace-pre-wrap">{note.text}</CardTitle>
           {note.tags.length ? (
             <div className="text-gray-600 mt-2 text-sm">
               Tags: {note.tags.map((tag) => `#${tag}`).join(", ")}
