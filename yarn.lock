@@ -929,6 +929,11 @@
     wrap-ansi "^8.1.0"
     wrap-ansi-cjs "npm:wrap-ansi@^7.0.0"
 
+"@javascript-packages/roman-numerals@^1.0.14":
+  version "1.0.14"
+  resolved "https://registry.yarnpkg.com/@javascript-packages/roman-numerals/-/roman-numerals-1.0.14.tgz#54ca6702b2bf114ff9d6691bb4f1933e1fb55ac2"
+  integrity sha512-EVZeMdEha3K/U4zphitcHTQVLT/5PhyW+EHy/N/fnpRGvM4Eay+91qdjwe0/ihscT5l/4HISge54840m2u4VTQ==
+
 "@jridgewell/gen-mapping@^0.3.5":
   version "0.3.8"
   resolved "https://registry.yarnpkg.com/@jridgewell/gen-mapping/-/gen-mapping-0.3.8.tgz#4f0e06362e01362f823d348f1872b08f666d8142"

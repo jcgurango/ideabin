@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/drawer";
 import { Note } from "@/lib/types";
 import { useDb } from "@/providers/database-provider";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 
 export default function Home() {
@@ -31,6 +32,7 @@ export default function Home() {
       <div className="sticky x-0 top-0 m-2 z-1">
         <CreateNote initialNote={initialNote} />
       </div>
+      <Link href="/scale-matcher">Scales</Link>
       <NoteList
         key={resetter}
         onDelete={async (note) => {
